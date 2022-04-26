@@ -1,0 +1,206 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<project xmlns="http://www.plcopen.org/xml/tc6_0200">
+  <fileHeader companyName="Beckhoff Automation GmbH" productName="TwinCAT PLC Control" productVersion="3.5.13.20" creationDateTime="2021-03-30T13:50:39.4131495" />
+  <contentHeader name="Untitled1" modificationDateTime="2021-03-30T13:50:39.4171496">
+    <coordinateInfo>
+      <fbd>
+        <scaling x="1" y="1" />
+      </fbd>
+      <ld>
+        <scaling x="1" y="1" />
+      </ld>
+      <sfc>
+        <scaling x="1" y="1" />
+      </sfc>
+    </coordinateInfo>
+    <addData>
+      <data name="http://www.3s-software.com/plcopenxml/projectinformation" handleUnknown="implementation">
+        <ProjectInformation />
+      </data>
+    </addData>
+  </contentHeader>
+  <types>
+    <dataTypes />
+    <pous>
+      <pou name="FB_MoveVelocityAutoChange" pouType="functionBlock">
+        <interface>
+          <inputVars>
+            <variable name="Execute">
+              <type>
+                <BOOL />
+              </type>
+            </variable>
+            <variable name="Velocity">
+              <type>
+                <LREAL />
+              </type>
+            </variable>
+            <variable name="Acceleration">
+              <type>
+                <LREAL />
+              </type>
+            </variable>
+            <variable name="Deceleration">
+              <type>
+                <LREAL />
+              </type>
+            </variable>
+            <variable name="Jerk">
+              <type>
+                <LREAL />
+              </type>
+            </variable>
+          </inputVars>
+          <outputVars>
+            <variable name="Busy">
+              <type>
+                <BOOL />
+              </type>
+            </variable>
+            <variable name="Error">
+              <type>
+                <BOOL />
+              </type>
+            </variable>
+            <variable name="ErrorID">
+              <type>
+                <UDINT />
+              </type>
+            </variable>
+            <variable name="CommandAborted">
+              <type>
+                <BOOL />
+              </type>
+            </variable>
+          </outputVars>
+          <localVars>
+            <variable name="Step">
+              <type>
+                <INT />
+              </type>
+            </variable>
+            <variable name="MC_MoveVelocity">
+              <type>
+                <derived name="MC_MoveVelocity" />
+              </type>
+            </variable>
+            <variable name="MC_MoveVelocity2">
+              <type>
+                <derived name="MC_MoveVelocity" />
+              </type>
+            </variable>
+            <variable name="VelocityChanged">
+              <type>
+                <BOOL />
+              </type>
+            </variable>
+            <variable name="VelocityOld">
+              <type>
+                <LREAL />
+              </type>
+            </variable>
+            <variable name="TrigbExecute">
+              <type>
+                <derived name="R_TRIG" />
+              </type>
+            </variable>
+            <variable name="TonTimeOut">
+              <type>
+                <derived name="TON" />
+              </type>
+            </variable>
+          </localVars>
+          <inOutVars>
+            <variable name="Axis">
+              <type>
+                <derived name="AXIS_REF" />
+              </type>
+            </variable>
+          </inOutVars>
+        </interface>
+        <body>
+          <ST>
+            <xhtml xmlns="http://www.w3.org/1999/xhtml">IF Execute = TRUE THEN
+	IF VelocityOld &lt;&gt; Velocity THEN
+		VelocityChanged:=TRUE;
+	END_IF
+END_IF
+IF Velocity &lt; 0 THEN
+	MC_MoveVelocity.Direction :=MC_Negative_Direction;
+	MC_MoveVelocity2.Direction:=MC_Negative_Direction;
+ELSE
+	MC_MoveVelocity.Direction :=MC_Positive_Direction;
+	MC_MoveVelocity2.Direction:=MC_Positive_Direction;
+END_IF
+
+MC_MoveVelocity(
+	Axis:=Axis , 
+	Execute:=Execute AND Step=0,
+	Velocity:=ABS( Velocity),
+	Acceleration:=Acceleration ,
+	Deceleration:=Deceleration ,
+	Jerk:=Jerk );
+MC_MoveVelocity2(
+	Axis:=Axis , 
+	Execute:=Execute AND Step =1,
+	Velocity:= ABS( Velocity),
+	Acceleration:=Acceleration ,
+	Deceleration:=Deceleration , 
+	Jerk:=Jerk );
+
+CASE Step OF
+0:
+	IF VelocityChanged THEN
+		Step:=1;
+		MC_MoveVelocity(
+			Axis:=Axis , 
+			Execute:=FALSE);
+		MC_MoveVelocity2(
+			Axis:=Axis , 
+			Execute:=FALSE);
+		VelocityChanged:=FALSE;
+	END_IF
+	Busy:=MC_MoveVelocity.Busy;
+	Error:=MC_MoveVelocity.Error;
+	ErrorID:=MC_MoveVelocity.ErrorID;
+	CommandAborted:=MC_MoveVelocity.CommandAborted;
+
+1:
+	IF VelocityChanged THEN
+		Step:=0;
+		MC_MoveVelocity(
+			Axis:=Axis , 
+			Execute:=FALSE);
+		MC_MoveVelocity2(
+			Axis:=Axis , 
+			Execute:=FALSE);
+		VelocityChanged:=FALSE;
+	END_IF
+	Busy:=MC_MoveVelocity2.Busy;
+	Error:=MC_MoveVelocity2.Error;
+	ErrorID:=MC_MoveVelocity2.ErrorID;
+	CommandAborted:=MC_MoveVelocity2.CommandAborted;
+END_CASE
+
+VelocityOld:=Velocity;</xhtml>
+          </ST>
+        </body>
+        <addData>
+          <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+            <ObjectId>4b7f6f68-e274-40a0-8ecf-9d1ae6c1d9d8</ObjectId>
+          </data>
+        </addData>
+      </pou>
+    </pous>
+  </types>
+  <instances>
+    <configurations />
+  </instances>
+  <addData>
+    <data name="http://www.3s-software.com/plcopenxml/projectstructure" handleUnknown="discard">
+      <ProjectStructure>
+        <Object Name="FB_MoveVelocityAutoChange" ObjectId="4b7f6f68-e274-40a0-8ecf-9d1ae6c1d9d8" />
+      </ProjectStructure>
+    </data>
+  </addData>
+</project>

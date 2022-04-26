@@ -1,0 +1,255 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<project xmlns="http://www.plcopen.org/xml/tc6_0200">
+  <fileHeader companyName="Beckhoff Automation GmbH" productName="TwinCAT PLC Control" productVersion="3.5.13.20" creationDateTime="2021-08-31T15:07:45.1506839" />
+  <contentHeader name="Untitled1" modificationDateTime="2021-08-31T15:07:45.155652">
+    <coordinateInfo>
+      <fbd>
+        <scaling x="1" y="1" />
+      </fbd>
+      <ld>
+        <scaling x="1" y="1" />
+      </ld>
+      <sfc>
+        <scaling x="1" y="1" />
+      </sfc>
+    </coordinateInfo>
+    <addData>
+      <data name="http://www.3s-software.com/plcopenxml/projectinformation" handleUnknown="implementation">
+        <ProjectInformation />
+      </data>
+    </addData>
+  </contentHeader>
+  <types>
+    <dataTypes />
+    <pous>
+      <pou name="FB_MoveAbsoluteAutoUpdateVelocity" pouType="functionBlock">
+        <interface>
+          <inputVars>
+            <variable name="Execute">
+              <type>
+                <BOOL />
+              </type>
+            </variable>
+            <variable name="Position">
+              <type>
+                <LREAL />
+              </type>
+            </variable>
+            <variable name="Velocity">
+              <type>
+                <LREAL />
+              </type>
+            </variable>
+            <variable name="Acceleration">
+              <type>
+                <LREAL />
+              </type>
+            </variable>
+            <variable name="Deceleration">
+              <type>
+                <LREAL />
+              </type>
+            </variable>
+            <variable name="Jerk">
+              <type>
+                <LREAL />
+              </type>
+            </variable>
+          </inputVars>
+          <outputVars>
+            <variable name="Busy">
+              <type>
+                <BOOL />
+              </type>
+            </variable>
+            <variable name="Error">
+              <type>
+                <BOOL />
+              </type>
+            </variable>
+            <variable name="ErrorID">
+              <type>
+                <UDINT />
+              </type>
+            </variable>
+            <variable name="CommandAborted">
+              <type>
+                <BOOL />
+              </type>
+            </variable>
+            <variable name="Done">
+              <type>
+                <BOOL />
+              </type>
+            </variable>
+          </outputVars>
+          <localVars>
+            <variable name="Step">
+              <type>
+                <INT />
+              </type>
+            </variable>
+            <variable name="MC_MoveAbsolute">
+              <type>
+                <derived name="MC_MoveAbsolute" />
+              </type>
+            </variable>
+            <variable name="MC_MoveAbsolute2">
+              <type>
+                <derived name="MC_MoveAbsolute" />
+              </type>
+            </variable>
+            <variable name="VelocityChanged">
+              <type>
+                <BOOL />
+              </type>
+            </variable>
+            <variable name="VelocityOld">
+              <type>
+                <LREAL />
+              </type>
+            </variable>
+            <variable name="TrigbExecute">
+              <type>
+                <derived name="R_TRIG" />
+              </type>
+            </variable>
+            <variable name="TonTimeOut">
+              <type>
+                <derived name="TON" />
+              </type>
+            </variable>
+          </localVars>
+          <inOutVars>
+            <variable name="Axis">
+              <type>
+                <derived name="AXIS_REF" />
+              </type>
+            </variable>
+          </inOutVars>
+        </interface>
+        <body>
+          <ST>
+            <xhtml xmlns="http://www.w3.org/1999/xhtml">//Allows for changing Velocity on the fly. Other then that pretty much the same as the current MC_MoveAbsolute;
+
+IF Execute = TRUE THEN
+	IF VelocityOld &lt;&gt; Velocity AND (MC_MoveAbsolute.Busy OR MC_MoveAbsolute2.Busy) THEN
+		VelocityChanged:=TRUE;
+	END_IF
+END_IF
+MC_MoveAbsolute(
+	Axis:=Axis , 
+	Execute:=Execute AND Step=0, 
+	Position:=Position,
+	Velocity:= Velocity, 
+	Acceleration:=Acceleration , 
+	Deceleration:=Deceleration , 
+	Jerk:=Jerk ,
+	);
+MC_MoveAbsolute2(
+	Axis:=Axis , 
+	Execute:=Execute AND Step =1, 
+	Velocity:= Velocity, 
+	Position:=Position,
+	Acceleration:=Acceleration , 
+	Deceleration:=Deceleration , 
+	Jerk:=Jerk );
+
+CASE Step OF
+0:
+	IF VelocityChanged THEN
+		Step:=1;
+		MC_MoveAbsolute(
+			Axis:=Axis , 
+			Execute:=FALSE);
+		MC_MoveAbsolute2(
+			Axis:=Axis , 
+			Execute:=FALSE);
+		VelocityChanged:=FALSE;
+	END_IF
+	Busy:=MC_MoveAbsolute.Busy;
+	Error:=MC_MoveAbsolute.Error;
+	ErrorID:=MC_MoveAbsolute.ErrorID;
+	CommandAborted:=MC_MoveAbsolute.CommandAborted;
+	Done:=MC_MoveAbsolute.Done;
+1:
+	IF VelocityChanged THEN
+		Step:=0;
+		MC_MoveAbsolute(
+			Axis:=Axis , 
+			Execute:=FALSE);
+		MC_MoveAbsolute2(
+			Axis:=Axis , 
+			Execute:=FALSE);
+		VelocityChanged:=FALSE;
+	END_IF
+	Busy:=MC_MoveAbsolute2.Busy;
+	Error:=MC_MoveAbsolute2.Error;
+	ErrorID:=MC_MoveAbsolute2.ErrorID;
+	CommandAborted:=MC_MoveAbsolute2.CommandAborted;
+	Done:=MC_MoveAbsolute2.Done;
+END_CASE
+
+VelocityOld:=Velocity;
+
+(*	MC_MoveVelocity(
+		Axis:=Axis , 
+		Execute:=VelocityChanged , 
+		Velocity:= Velocity, 
+		Acceleration:=Acceleration , 
+		Deceleration:=Deceleration , 
+		Jerk:=Jerk );*)</xhtml>
+          </ST>
+        </body>
+        <addData>
+          <data name="http://www.3s-software.com/plcopenxml/interfaceasplaintext" handleUnknown="implementation">
+            <InterfaceAsPlainText>
+              <xhtml xmlns="http://www.w3.org/1999/xhtml">FUNCTION_BLOCK FB_MoveAbsoluteAutoUpdateVelocity
+VAR_INPUT
+	Execute: BOOL;
+	Position: LREAL;
+	Velocity: LREAL;
+	Acceleration: LREAL;
+	Deceleration: LREAL;
+	Jerk: LREAL;
+END_VAR
+VAR_OUTPUT
+	Busy: BOOL;
+	Error: BOOL;
+	ErrorID: UDINT;
+	CommandAborted: BOOL;
+	Done: BOOL;
+END_VAR
+VAR
+	Step: INT;
+	MC_MoveAbsolute: MC_MoveAbsolute;
+	MC_MoveAbsolute2: MC_MoveAbsolute;
+	VelocityChanged: BOOL;
+	VelocityOld: LREAL;
+	TrigbExecute: R_TRIG;
+	TonTimeOut: TON;
+END_VAR
+VAR_IN_OUT
+	Axis: AXIS_REF;
+END_VAR
+</xhtml>
+            </InterfaceAsPlainText>
+          </data>
+          <data name="http://www.3s-software.com/plcopenxml/objectid" handleUnknown="discard">
+            <ObjectId>050ae31f-4585-4a97-8fd9-a71e21ff75f4</ObjectId>
+          </data>
+        </addData>
+      </pou>
+    </pous>
+  </types>
+  <instances>
+    <configurations />
+  </instances>
+  <addData>
+    <data name="http://www.3s-software.com/plcopenxml/projectstructure" handleUnknown="discard">
+      <ProjectStructure>
+        <Object Name="FB_MoveAbsoluteAutoUpdateVelocity" ObjectId="050ae31f-4585-4a97-8fd9-a71e21ff75f4" />
+      </ProjectStructure>
+    </data>
+  </addData>
+</project>
