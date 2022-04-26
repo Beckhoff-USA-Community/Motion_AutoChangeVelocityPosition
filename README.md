@@ -1,5 +1,5 @@
 # About This Repository
-Just import the .xml files into your project. The function blocks are nearly the same as FB_MoveVelocity and FB_MoveAbsolute. For example: Replace the FB_MoveAbsolute with the version in this library and any changes in velocity automatic.
+Just import the .xml files into your project. The function blocks are nearly the same as FB_MoveVelocity and FB_MoveAbsolute. For example: Replace the FB_MoveVelocity with the version in this library and any changes in velocity automatic.
 
 FB_MoveAbsolute version takes new positions automaticly. 
 
