@@ -1,7 +1,9 @@
 # About This Repository
+Just import the .xml files into your project. The function blocks are nearly the same as FB_MoveVelocity and FB_MoveAbsolute. For example: Replace the FB_MoveAbsolute with the version in this library and any changes in velocity automatic.
 
--- UPDATE THIS SECTION -- 
-This Repository is a template meant for basing new public repos off of. A new GitHub repo can be based off this template to automatically import the same TwinCAT GitIgnore and README file templates. After importing, replace this text to match the desired repo descriptions. 
+FB_MoveAbsolute version takes new positions automaticly. 
+
+Enjoy!
 
 This sample is created by [Beckhoff Automation LLC.](https://www.beckhoff.com/en-us/), and is provided as-is under the Zero-Clause BSD license.
 
